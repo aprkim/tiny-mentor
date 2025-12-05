@@ -219,7 +219,7 @@ body {
 .date-selector {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: var(--space-md);
 }
 
@@ -228,6 +228,7 @@ body {
     border: none;
     width: 40px;
     height: 40px;
+    min-width: 40px;
     border-radius: 50%;
     font-size: 24px;
     color: var(--primary);
@@ -246,6 +247,9 @@ body {
 .date-display {
     flex: 1;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .date-input {
@@ -257,9 +261,10 @@ body {
     border-radius: var(--radius-md);
     text-align: center;
     width: 100%;
-    max-width: 200px;
+    max-width: 100%;
     cursor: pointer;
     transition: border-color 0.2s ease;
+    color: #000000;
 }
 
 .date-input:focus {
@@ -271,8 +276,13 @@ body {
     display: flex;
     gap: var(--space-sm);
     justify-content: center;
+    align-items: center;
     margin-top: var(--space-sm);
-    flex-wrap: wrap;
+}
+
+.day-separator {
+    color: var(--text-muted);
+    font-size: 12px;
 }
 
 .day-of-week {
@@ -283,7 +293,7 @@ body {
 
 .day-type {
     font-size: 12px;
-    padding: 2px 8px;
+    padding: 2px 10px;
     border-radius: 12px;
     font-weight: 600;
 }
@@ -310,6 +320,8 @@ body {
 
 .input-group {
     flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .input-group label {
@@ -344,7 +356,13 @@ body {
     font-size: 20px;
     color: var(--primary);
     font-weight: 700;
-    padding-top: 20px;
+    padding-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    height: 52px;
+    margin-bottom: 8px;
 }
 
 /* ===================================
@@ -783,12 +801,8 @@ body {
    =================================== */
 
 @media (max-width: 480px) {
-    .weight-inputs {
-        flex-direction: column;
-    }
-    
     .conversion-arrow {
-        transform: rotate(90deg);
+        transform: rotate(0deg);
         padding-top: 0;
     }
     
@@ -798,6 +812,26 @@ body {
     
     .card-actions button {
         width: 100%;
+    }
+    
+    .day-info {
+        display: none;
+    }
+    
+    .date-selector {
+        align-items: center;
+        gap: var(--space-md);
+    }
+    
+    .date-nav-btn {
+        background: transparent;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+    }
+    
+    .date-nav-btn:hover {
+        background: transparent;
     }
 }
 
