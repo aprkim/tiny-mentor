@@ -793,7 +793,13 @@ body {
 .preset-search-row {
     display: flex;
     gap: 8px;
-    align-items: center;
+    align-items: stretch;
+}
+
+.preset-search-row input[type="text"],
+.preset-search-row input[type="number"],
+.preset-search-row button {
+    height: 44px;
 }
 
 .preset-search-row input[type="text"] {
@@ -807,9 +813,8 @@ body {
 
 .preset-search-row button {
     flex: 0 0 auto;
-    height: 44px;
     min-width: 44px;
-    padding: 10px 12px;
+    padding: 0 12px;
 }
 
 .preset-items-list {
