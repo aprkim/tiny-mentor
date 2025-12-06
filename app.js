@@ -605,7 +605,7 @@ function loadPresetsScreen() {
             </div>
             <div class="preset-actions">
                 <button class="btn-secondary btn-sm" onclick="editPreset(${index})">Edit</button>
-                <button class="btn-secondary btn-sm" onclick="deletePreset(${index})">Delete</button>
+                <button class="btn-secondary btn-sm" onclick="deletePreset(${index}).catch(e => console.error(e))">Delete</button>
             </div>
         </div>
     `).join('');
