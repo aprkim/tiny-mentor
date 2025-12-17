@@ -1,4 +1,4 @@
-# 🎯 Tiny Tweaks
+# 🎯 Tiny Body
 
 **Smart changes. Real progress.**
 
