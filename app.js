@@ -1161,12 +1161,55 @@ function renderGraph() {
     // Sort by date
     daysWithWeight.sort((a, b) => a.date.localeCompare(b.date));
 
-    const labels = daysWithWeight.map(d => {
+    // Fill in missing dates with interpolated values
+    const filledData = [];
+    for (let i = 0; i < daysWithWeight.length - 1; i++) {
+        const currentDay = daysWithWeight[i];
+        const nextDay = daysWithWeight[i + 1];
+
+        filledData.push(currentDay);
+
+        // Calculate days between current and next
+        const currentDate = new Date(currentDay.date + 'T12:00:00');
+        const nextDate = new Date(nextDay.date + 'T12:00:00');
+        const daysBetween = Math.floor((nextDate - currentDate) / (1000 * 60 * 60 * 24)) - 1;
+
+        // Add interpolated points for missing days
+        if (daysBetween > 0) {
+            const currentWeight = currentUnit === 'lb' ? currentDay.weightLb : currentDay.weightKg;
+            const nextWeight = currentUnit === 'lb' ? nextDay.weightLb : nextDay.weightKg;
+            const weightDiff = nextWeight - currentWeight;
+            const weightStep = weightDiff / (daysBetween + 1);
+
+            for (let j = 1; j <= daysBetween; j++) {
+                const interpolatedDate = new Date(currentDate);
+                interpolatedDate.setDate(interpolatedDate.getDate() + j);
+                const dateStr = getLocalDateString(interpolatedDate);
+                const interpolatedWeight = currentWeight + (weightStep * j);
+
+                filledData.push({
+                    date: dateStr,
+                    weightLb: currentUnit === 'lb' ? interpolatedWeight : kgToLb(interpolatedWeight),
+                    weightKg: currentUnit === 'kg' ? interpolatedWeight : lbToKg(interpolatedWeight),
+                    isInterpolated: true
+                });
+            }
+        }
+    }
+    // Add the last actual data point
+    filledData.push(daysWithWeight[daysWithWeight.length - 1]);
+
+    const labels = filledData.map(d => {
         const date = new Date(d.date + 'T12:00:00');
         return `${date.getMonth() + 1}/${date.getDate()}`;
     });
 
-    const data = daysWithWeight.map(d => currentUnit === 'lb' ? d.weightLb : d.weightKg);
+    const data = filledData.map(d => currentUnit === 'lb' ? d.weightLb : d.weightKg);
+
+    // Create point styles - smaller and lighter for interpolated points
+    const pointRadii = filledData.map(d => d.isInterpolated ? 2 : 5);
+    const pointBackgroundColors = filledData.map(d => d.isInterpolated ? 'rgba(191, 49, 67, 0.3)' : '#A52A3A');
+    const pointBorderColors = filledData.map(d => d.isInterpolated ? 'rgba(191, 49, 67, 0.5)' : '#BF3143');
 
     const ctx = document.getElementById('weight-chart');
 
@@ -1185,9 +1228,9 @@ function renderGraph() {
                 borderColor: '#BF3143',
                 backgroundColor: 'rgba(191, 49, 67, 0.1)',
                 tension: 0.3,
-                pointBackgroundColor: '#A52A3A',
-                pointBorderColor: '#BF3143',
-                pointRadius: 5,
+                pointBackgroundColor: pointBackgroundColors,
+                pointBorderColor: pointBorderColors,
+                pointRadius: pointRadii,
                 pointHoverRadius: 7
             }]
         },
