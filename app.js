@@ -98,6 +98,10 @@ function loadData() {
     if (stored) {
         try {
             appData = JSON.parse(stored);
+            // Ensure backwards compatibility - add exercisePresets if it doesn't exist
+            if (!appData.exercisePresets) {
+                appData.exercisePresets = [];
+            }
         } catch (e) {
             console.error('Error loading data:', e);
             appData = { days: [], presets: [], exercisePresets: [] };
