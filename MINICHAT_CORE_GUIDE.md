@@ -1,4 +1,4 @@
-# MiniChatCore Developer Guide v0.2 January 27, 2026
+# MiniChatCore Developer Guide v0.26 January 28, 2026 3:56pm
 
 **Add video chat to your app with minimal JavaScript**
 
@@ -40,10 +40,10 @@ Users can enter a video chat session three ways:
 | Path | Use Case | Methods |
 |------|----------|---------|
 | **Login** | Registered users with existing channels | `login()` â†’ `loadChannels()` â†’ `selectChannel()` |
-| **Create Room** | Anonymous user starts a new room | `signupAnonymous()` â†’ `createChannel()` â†’ `joinByCode()` |
-| **Join Room** | Anonymous user joins via room code | `signupAnonymous()` â†’ `joinByCode()` |
+| **Create Room** | Anonymous user starts a new room | `signupAnonymous()` â†’ `createChannel()` â†’ `joinByChannelId()` |
+| **Join Room** | Anonymous user joins via room code | `signupAnonymous()` â†’ `joinByRoomCode()` |
 
-The room code (a short string like `"K7xmQ"`) is shareableâ€”give it to others so they can join. **Room codes are case-sensitive.**
+The room code (a short string like `"K7xmQ"`) is shareableâ€”give it to others so they can join.
 
 ### 3. Video Element Management
 
@@ -81,8 +81,8 @@ Include the import map and create the chat instance:
 import MiniChatCore from 'minichat-core';
 
 const chat = new MiniChatCore({
-    contextId: 'Kw6w6w6w6w',
-    contextAuthToken: 'Kw6w6w6w6w'
+    contextId: 'YOUR_CONTEXT_ID',
+    contextAuthToken: 'YOUR_CONTEXT_TOKEN'
 });
 </script>
 ```
@@ -116,7 +116,8 @@ For the simplest anonymous flow:
 
 ```javascript
 await chat.signupAnonymous('MyName');
-await chat.joinByCode('ROOM_CODE');
+await chat.joinByRoomCode('ROOM_CODE');  // Join by room code
+// OR: await chat.joinByChannelId(channelId);  // Join by channel ID
 await chat.join();  // Actually connect to WebRTC
 ```
 
@@ -149,7 +150,7 @@ chat.toggleMuteAudio();  // Mute mic (keeps streaming, sends silence)
 | `onLogin` | `(user)` | After successful login/signup |
 | `onChannelsLoaded` | `(channels[])` | After `loadChannels()` completes |
 | `onUsersLoaded` | `(users[])` | After `loadUsers()` completes |
-| `onChannelSelected` | `(channel)` | After `selectChannel()`, `selectUser()`, or `joinByCode()` |
+| `onChannelSelected` | `(channel)` | After `selectChannel()`, `selectUser()`, `joinByChannelId()`, or `joinByRoomCode()` |
 | `onJoined` | none | Successfully connected to room |
 | `onLeft` | none | Disconnected from room |
 | `onMemberJoined` | `(memberId)` | New member entered the room |
@@ -176,6 +177,33 @@ chat.screencastState   // { video, videoMuted }
 chat.getMember(memberId)           // { username, hasCamera, hasScreencast, ... }
 chat.getMemberIds()                // array of member IDs in the room
 chat.getMemberMediaStates(memberId) // detailed audio/video state
+
+// Get channel info before joining (requires login first)
+await chat.getChannelByRoomCode(roomCode)  // full channel: { id, room_code, title, description, members: [...], ... }
+await chat.getChannelById(channelId)       // same, but by database ID
+```
+
+### Preview Room Before Joining
+
+You can fetch full channel information before joining to check title, capacity, etc:
+
+```javascript
+await chat.signupAnonymous('Alice');
+
+// Get room details before joining
+const roomInfo = await chat.getChannelByRoomCode('K7xmQ');
+console.log(`Room: ${roomInfo.title}`);
+console.log(`Room code: ${roomInfo.room_code}`);
+
+const memberCount = roomInfo.members ? roomInfo.members.length : 0;
+if (memberCount >= 4) {
+    alert('Room is full');
+    return;
+}
+
+// Now join with confidence
+await chat.joinByRoomCode('K7xmQ');
+await chat.join();
 ```
 
 ---
@@ -211,9 +239,59 @@ dropdown.onchange = async () => {
 
 **Key properties in each channel object:**
 - `id` â€” unique channel identifier (use with `selectChannel()`)
-- `name` â€” display name
-- `room_code` â€” shareable code for `joinByCode()`
+- `name` (or `title`) â€” display name
+- `room_code` â€” shareable room code for `joinByRoomCode()`
 - `description` â€” optional channel description
+
+### Creating a New Room
+
+When you create a channel, the returned object contains the room code immediately:
+
+```javascript
+await chat.signupAnonymous('Alice');
+
+const channel = await chat.createChannel({ 
+    title: 'Alice\'s Room',
+    allowsGuests: true 
+});
+
+// Room code is immediately available
+console.log(`Share this code: ${channel.room_code}`);  // e.g., "K7xmQ"
+console.log(`Channel ID: ${channel.id}`);        // Database ID
+console.log(`Room title: ${channel.title}`);
+
+// Join the room you just created
+await chat.joinByRoomCode(channel.room_code);
+await chat.join();
+
+// Room code also available via getter after joining
+console.log(chat.currentRoomCode);  // Same as channel.room_code
+```
+
+### Two Ways to Join a Channel
+
+MiniChatCore provides two methods for joining channels:
+
+**1. `joinByChannelId(channelId)` - The fundamental method**
+```javascript
+// Use when you have the channel database ID
+const channel = await chat.createChannel({ title: 'My Room' });
+await chat.joinByChannelId(channel.id);  // channel.id is the database ID
+await chat.join();
+```
+
+**2. `joinByRoomCode(roomCode)` - Convenience wrapper**
+```javascript
+// Use when you have a shareable room code
+await chat.joinByRoomCode('K7xmQ');  // Looks up channel by room code, then calls joinByChannelId()
+await chat.join();
+```
+
+**Why two methods?**
+- All channels have IDs (required), but room codes are optional
+- Private/system channels may not have room codes
+- `joinByRoomCode()` automatically fetches channel info and extracts the ID
+- Both methods store the full channel object in `chat.selectedChannel`
 
 ### User List (Quick Chat)
 
@@ -225,9 +303,9 @@ chat.onLogin = async (user) => {
 };
 
 chat.onUsersLoaded = (users) => {
-    // users = [{ pid, username, avatar_pic, status, ... }, ...]
+    // users = [{ id, username, avatar_pic, status, ... }, ...]
     users.forEach(u => {
-        dropdown.add(new Option(u.username, u.pid));
+        dropdown.add(new Option(u.username, u.id));
     });
 };
 ```
@@ -245,7 +323,7 @@ dropdown.onchange = async () => {
 `selectUser()` handles everything: it calls `createQuickChatChannel` on the server, sets up the connection, and triggers `onChannelSelected` with the resulting channel. From there, the flow is identical to channel selection.
 
 **Key properties in each user object:**
-- `pid` â€” unique user identifier (use with `selectUser()`)
+- `id` â€” unique user identifier (use with `selectUser()`)
 - `username` â€” display name
 - `avatar_pic` â€” profile image path
 - `status` â€” user's current status
@@ -267,7 +345,7 @@ Study this file to see how events flow and how little JavaScript is actually nee
 
 ## Tips for Your App
 
-1. **Always call `join()` after selecting a channel** â€” `selectChannel()` and `joinByCode()` only configure which room to enter; `join()` actually connects.
+1. **Always call `join()` after selecting a channel** â€” `selectChannel()`, `joinByChannelId()`, and `joinByRoomCode()` only configure which room to enter; `join()` actually connects.
 
 2. **Create video elements in `onMemberStreamStart`** â€” Don't pre-create them. The event tells you when a stream is ready.
 
@@ -275,7 +353,19 @@ Study this file to see how events flow and how little JavaScript is actually nee
 
 4. **Check `chat.currentRoomCode` after joining** â€” Display this so users can share it with others.
 
-5. **Handle `onError` for debugging** â€” During development, log all errors to understand what's happening.
+5. **Check room capacity before joining** â€” Channel info includes a `members` array, so you can check capacity:
+   ```javascript
+   // Get channel info by room code
+   const channel = await chat.getChannelByRoomCode(roomCode);
+   const count = channel.members ? channel.members.length : 0;
+   if (count >= 2) {
+       alert('Room is full');
+       return;
+   }
+   ```
+   Note: You must be logged in (even anonymously) to get channel info.
+
+6. **Handle `onError` for debugging** â€” During development, log all errors to understand what's happening.
 
 ---
 

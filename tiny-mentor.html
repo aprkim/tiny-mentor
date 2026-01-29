@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiny Mentor</title>
+    <style>
+        :root {
+            /* Layout */
+            --radius: 16px;
+            --max: 980px;
+            --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+
+            /* Surfaces */
+            --bg: #F1F3F0;
+            --card: #FAF9F6;
+            --soft: #E6ECDC;
+            --border: #E4E7E3;
+            --borderSoft: #D7DDD8;
+
+            /* Text */
+            --text: #2A302E;
+            --muted: #5F6B66;
+            --muted2: #9AA5A0;
+
+            /* Brand */
+            --brand: #8DA399;
+            --brandSoft: rgba(141,163,153,.18);
+
+            /* Actions */
+            --accent: #556B2F;
+            --accentHover: #809c52;
+            --accentSoft: rgba(85,107,47,.12);
+            --accentBorder: rgba(85,107,47,.30);
+
+            /* Status */
+            --liveBg: #E3E9E1;
+            --liveBorder: #CBD5C8;
+            --liveText: #3A443F;
+
+            --disabledBg: #ECEFED;
+            --disabledBorder: #E4E7E3;
+            --disabledText: #9AA5A0;
+
+            --dangerBg: #F2E8E6;
+            --dangerBorder: #E3C7C2;
+            --dangerText: #8B4A3E;
+
+            /* Overlay */
+            --overlay: rgba(42, 48, 46, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Entry Screen */
+        .entry-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            gap: 20px;
+        }
+
+        .entry-screen.hidden {
+            display: none;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .app-subtitle {
+            font-size: 15px;
+            color: var(--muted);
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            transition: border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--borderSoft);
+        }
+
+        .card-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        /* Inputs */
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-family: var(--sans);
+            border: 1px solid var(--border);
+            border-radius: calc(var(--radius) - 4px);
+            background: var(--card);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input::placeholder {
+            color: var(--muted2);
+        }
+
+        input:focus {
+            border-color: var(--accentBorder);
+            box-shadow: 0 0 0 3px var(--accentSoft);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: var(--sans);
+            border-radius: calc(var(--radius) - 4px);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            outline: none;
+        }
+
+        .btn:focus-visible {
+            box-shadow: 0 0 0 3px var(--accentSoft);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: var(--accentHover);
+        }
+
+        .btn-secondary {
+            background: var(--card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--borderSoft);
+            background: var(--soft);
+        }
+
+        .btn-danger {
+            background: var(--dangerBg);
+            color: var(--dangerText);
+            border: 1px solid var(--dangerBorder);
+        }
+
+        .btn-danger:hover {
+            background: #EBD9D6;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Action Card */
+        .action-card {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: var(--muted2);
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .join-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .join-row input {
+            flex: 1;
+        }
+
+        .join-row .btn {
+            flex-shrink: 0;
+        }
+
+        .error-message {
+            font-size: 13px;
+            color: var(--dangerText);
+            margin-top: 8px;
+            min-height: 20px;
+        }
+
+        /* Live Room */
+        .live-room {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            background: var(--bg);
+        }
+
+        .live-room.active {
+            display: flex;
+        }
+
+        /* Room Header */
+        .room-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 20px;
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .room-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .room-code-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--soft);
+            padding: 6px 12px;
+            border-radius: calc(var(--radius) - 8px);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+            font-family: ui-monospace, monospace;
+        }
+
+        .share-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            color: var(--muted);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .share-btn:hover {
+            background: var(--soft);
+            color: var(--text);
+        }
+
+        .share-btn.copied {
+            color: var(--accent);
+        }
+
+        .share-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Timer */
+        .timer-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--liveBg);
+            border: 1px solid var(--liveBorder);
+            border-radius: calc(var(--radius) - 8px);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--liveText);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-display.warning {
+            background: #FEF3E6;
+            border-color: #F5D5A8;
+            color: #8B6914;
+        }
+
+        .timer-display.ending {
+            background: var(--dangerBg);
+            border-color: var(--dangerBorder);
+            color: var(--dangerText);
+        }
+
+        .timer-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Video Grid */
+        .video-grid {
+            flex: 1;
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            min-height: 0;
+        }
+
+        @media (max-width: 640px) {
+            .video-grid {
+                flex-direction: column;
+            }
+        }
+
+        /* Video Tile */
+        .video-tile {
+            flex: 1;
+            position: relative;
+            background: var(--text);
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .video-tile video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-tile.speaking {
+            box-shadow: 0 0 0 3px var(--accent);
+            transform: scale(1.01);
+        }
+
+        /* Avatar Fallback */
+        .avatar-fallback {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: var(--muted2);
+        }
+
+        .avatar-fallback.visible {
+            display: flex;
+        }
+
+        .avatar-status {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .avatar-status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            font-size: 11px;
+            color: #ffffff;
+        }
+
+        .avatar-status-item svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .avatar-status-item.off {
+            color: #ff6b6b;
+        }
+
+        .avatar-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--card);
+            text-transform: uppercase;
+        }
+
+        .avatar-name {
+            font-size: 14px;
+            color: var(--muted2);
+        }
+
+        /* Tile Overlay */
+        .tile-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.5));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tile-name {
+            font-size: 14px;
+            color: #ffffff;
+            font-weight: 500;
+        }
+
+        .tile-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            color: #ffffff;
+            opacity: 0.8;
+        }
+
+        .status-icon.muted {
+            color: #ff6b6b;
+            opacity: 1;
+        }
+
+        /* Controls Bar */
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .control-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--soft);
+            color: var(--text);
+        }
+
+        .control-btn:hover {
+            background: var(--borderSoft);
+        }
+
+        .control-btn.active {
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        .control-btn.active:hover {
+            background: var(--accentHover);
+        }
+
+        .control-btn.off {
+            background: var(--dangerBg);
+            color: var(--dangerText);
+        }
+
+        .control-btn.off:hover {
+            background: #EBD9D6;
+        }
+
+        .control-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .leave-btn {
+            background: var(--dangerBg);
+            color: var(--dangerText);
+            border: 1px solid var(--dangerBorder);
+            margin-left: 24px;
+        }
+
+        .leave-btn:hover {
+            background: #EBD9D6;
+        }
+
+        /* Waiting State */
+        .waiting-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--overlay);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            color: #ffffff;
+            border-radius: var(--radius);
+        }
+
+        .waiting-overlay.hidden {
+            display: none;
+        }
+
+        .waiting-text {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .pulse-ring {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        /* End Screen */
+        .end-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px;
+            gap: 24px;
+            text-align: center;
+        }
+
+        .end-screen.active {
+            display: flex;
+        }
+
+        .end-icon {
+            width: 64px;
+            height: 64px;
+            color: var(--brand);
+        }
+
+        .end-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .end-subtitle {
+            font-size: 15px;
+            color: var(--muted);
+            max-width: 300px;
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Screen share tile */
+        .screen-share-tile {
+            position: absolute;
+            inset: 12px;
+            z-index: 10;
+            background: #1a1a1a;
+        }
+
+        .screen-share-tile video {
+            object-fit: contain;
+            background: #1a1a1a;
+        }
+
+        /* Screen share control buttons container */
+        .screen-share-controls {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 15;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .screen-share-tile:hover .screen-share-controls {
+            opacity: 1;
+        }
+
+        .screen-ctrl-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .screen-ctrl-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .screen-ctrl-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .screen-ctrl-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Tooltip for screen controls */
+        .screen-ctrl-btn {
+            position: relative;
+        }
+
+        .screen-ctrl-btn .tooltip {
+            position: absolute;
+            right: calc(100% + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .screen-ctrl-btn .tooltip::after {
+            content: '';
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-left-color: rgba(0, 0, 0, 0.85);
+        }
+
+        .screen-ctrl-btn:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Fullscreen mode styles */
+        .screen-share-tile:fullscreen,
+        .screen-share-tile:-webkit-full-screen {
+            background: #000;
+            inset: 0;
+        }
+
+        .screen-share-tile:fullscreen video,
+        .screen-share-tile:-webkit-full-screen video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .screen-share-tile:fullscreen .screen-share-controls,
+        .screen-share-tile:-webkit-full-screen .screen-share-controls {
+            opacity: 1;
+            top: 20px;
+            right: 20px;
+        }
+
+        /* When screen sharing, make camera tiles smaller */
+        .video-grid.screen-sharing {
+            position: relative;
+        }
+
+        .video-grid.screen-sharing .video-tile:not(.screen-share-tile) {
+            position: absolute;
+            width: 160px;
+            height: 120px;
+            bottom: 12px;
+            z-index: 20;
+            border: 2px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: grab;
+            user-select: none;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .video-grid.screen-sharing .video-tile:not(.screen-share-tile):active {
+            cursor: grabbing;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .video-grid.screen-sharing .video-tile:not(.screen-share-tile).dragging {
+            transition: none;
+        }
+
+        .video-grid.screen-sharing #localTile {
+            right: 12px;
+        }
+
+        .video-grid.screen-sharing #remoteTile {
+            right: 184px;
+        }
+
+        @media (max-width: 640px) {
+            .video-grid.screen-sharing .video-tile:not(.screen-share-tile) {
+                width: 100px;
+                height: 75px;
+            }
+
+            .video-grid.screen-sharing #remoteTile {
+                right: 124px;
+            }
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text);
+            color: var(--card);
+            padding: 12px 24px;
+            border-radius: calc(var(--radius) - 4px);
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Role selector */
+        .role-selector {
+            display: flex;
+            gap: 12px;
+        }
+
+        .role-btn {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 16px 12px;
+            border: 2px solid var(--border);
+            border-radius: calc(var(--radius) - 4px);
+            background: var(--card);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-btn:hover {
+            border-color: var(--borderSoft);
+            background: var(--soft);
+        }
+
+        .role-btn.selected {
+            border-color: var(--accent);
+            background: var(--accentSoft);
+        }
+
+        .role-btn svg {
+            width: 28px;
+            height: 28px;
+            color: var(--muted);
+        }
+
+        .role-btn.selected svg {
+            color: var(--accent);
+        }
+
+        .role-btn span {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        /* Role badge on tiles */
+        .role-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-badge.mentor {
+            background: var(--accent);
+            color: #ffffff;
+        }
+
+        .role-badge.mentee {
+            background: var(--brandSoft);
+            color: var(--text);
+            border: 1px solid var(--brand);
+        }
+    </style>
+    <script src="https://proto2.makedo.com:8883/v02/scripts/protocol.js"></script>
+</head>
+<body>
+    <!-- Entry Screen -->
+    <div id="entryScreen" class="entry-screen">
+        <div class="app-header">
+            <h1 class="app-title">Tiny Mentor</h1>
+            <p class="app-subtitle">15-minute focused video sessions</p>
+        </div>
+
+        <!-- Name Card -->
+        <div class="card">
+            <label class="card-label">Your name</label>
+            <input type="text" id="nameInput" placeholder="Enter your name" autocomplete="name">
+        </div>
+
+        <!-- Role Card -->
+        <div class="card">
+            <label class="card-label">I am a...</label>
+            <div class="role-selector">
+                <button class="role-btn" id="mentorBtn" data-role="mentor">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 00-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 010 7.75"/>
+                    </svg>
+                    <span>Mentor</span>
+                </button>
+                <button class="role-btn" id="menteeBtn" data-role="mentee">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Mentee</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Card -->
+        <div class="card action-card">
+            <button id="startBtn" class="btn btn-primary" style="width: 100%;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14v-4z"/>
+                    <rect x="3" y="6" width="12" height="12" rx="2"/>
+                </svg>
+                Start a Room
+            </button>
+
+            <div class="divider">or</div>
+
+            <div class="join-row">
+                <input type="text" id="roomCodeInput" placeholder="Enter room code">
+                <button id="joinBtn" class="btn btn-secondary">Join</button>
+            </div>
+
+            <div id="errorMessage" class="error-message"></div>
+        </div>
+    </div>
+
+    <!-- Live Room -->
+    <div id="liveRoom" class="live-room">
+        <!-- Room Header -->
+        <div class="room-header">
+            <div class="room-info">
+                <div class="room-code-badge">
+                    <span id="roomCodeDisplay">------</span>
+                    <button class="share-btn" id="copyCodeBtn" title="Copy room code">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                        </svg>
+                    </button>
+                    <button class="share-btn" id="shareLinkBtn" title="Copy invite link">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                            <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="timer-display" id="timerDisplay">
+                <svg class="timer-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <span id="timerText">15:00</span>
+            </div>
+        </div>
+
+        <!-- Video Grid -->
+        <div class="video-grid" id="videoGrid">
+            <!-- Local Video Tile -->
+            <div class="video-tile" id="localTile">
+                <video id="localVideo" autoplay muted playsinline></video>
+                <div class="avatar-fallback" id="localAvatar">
+                    <div class="avatar-circle" id="localInitial">?</div>
+                    <div class="avatar-status" id="localAvatarStatus">
+                        <span class="avatar-status-item off" id="localVideoStatus">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34l1 1L23 7v10"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            Video off
+                        </span>
+                        <span class="avatar-status-item off" id="localAudioStatus">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                                <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/>
+                                <path d="M17 16.95A7 7 0 015 12v-2m14 0v2a7 7 0 01-.11 1.23"/>
+                            </svg>
+                            Audio off
+                        </span>
+                    </div>
+                </div>
+                <span class="role-badge" id="localRoleBadge" style="display: none;"></span>
+                <div class="tile-overlay">
+                    <span class="tile-name" id="localName">You</span>
+                    <div class="tile-status">
+                        <svg class="status-icon" id="localMicOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                            <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                        <svg class="status-icon muted" id="localMicOffIcon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                            <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/>
+                            <path d="M17 16.95A7 7 0 015 12v-2m14 0v2a7 7 0 01-.11 1.23"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Remote Video Tile -->
+            <div class="video-tile" id="remoteTile" style="display: none;">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <div class="avatar-fallback" id="remoteAvatar">
+                    <div class="avatar-circle" id="remoteInitial">?</div>
+                    <div class="avatar-status" id="remoteAvatarStatus">
+                        <span class="avatar-status-item off" id="remoteVideoStatus">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34l1 1L23 7v10"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            Video off
+                        </span>
+                        <span class="avatar-status-item off" id="remoteAudioStatus">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                                <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/>
+                                <path d="M17 16.95A7 7 0 015 12v-2m14 0v2a7 7 0 01-.11 1.23"/>
+                            </svg>
+                            Audio off
+                        </span>
+                    </div>
+                </div>
+                <span class="role-badge" id="remoteRoleBadge" style="display: none;"></span>
+                <div class="tile-overlay">
+                    <span class="tile-name" id="remoteName">Connecting...</span>
+                    <div class="tile-status">
+                        <svg class="status-icon" id="remoteMicOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                            <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                        <svg class="status-icon muted" id="remoteMicOffIcon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="1" y1="1" x2="23" y2="23"/>
+                            <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/>
+                            <path d="M17 16.95A7 7 0 015 12v-2m14 0v2a7 7 0 01-.11 1.23"/>
+                            <line x1="12" y1="19" x2="12" y2="23"/>
+                            <line x1="8" y1="23" x2="16" y2="23"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="waiting-overlay" id="waitingOverlay">
+                    <div class="pulse-ring"></div>
+                    <span class="waiting-text">Waiting for guest...</span>
+                </div>
+            </div>
+
+            <!-- Screen Share Tile -->
+            <div class="video-tile screen-share-tile" id="screenShareTile" style="display: none;">
+                <video id="screenShareVideo" autoplay playsinline></video>
+                <div class="screen-share-controls" id="screenShareControls">
+                    <button class="screen-ctrl-btn" id="fullscreenBtn">
+                        <span class="tooltip">View in fullscreen</span>
+                        <svg id="fullscreenEnterIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/>
+                        </svg>
+                        <svg id="fullscreenExitIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M8 3v3a2 2 0 01-2 2H3m18 0h-3a2 2 0 01-2-2V3m0 18v-3a2 2 0 012-2h3M3 16h3a2 2 0 012 2v3"/>
+                        </svg>
+                    </button>
+                    <button class="screen-ctrl-btn" id="pipBtn">
+                        <span class="tooltip">Pop out to mini player</span>
+                        <svg id="pipEnterIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <rect x="12" y="9" width="8" height="6" rx="1" ry="1" fill="currentColor" opacity="0.3"/>
+                        </svg>
+                        <svg id="pipExitIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M12 9h8v6h-8z" fill="currentColor"/>
+                            <line x1="14" y1="11" x2="18" y2="15"/>
+                            <line x1="18" y1="11" x2="14" y2="15"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="tile-overlay">
+                    <span class="tile-name" id="screenShareName">Screen Share</span>
+                    <div class="tile-status">
+                        <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controls Bar -->
+        <div class="controls-bar">
+            <button class="control-btn active" id="micBtn" title="Toggle microphone">
+                <svg id="micOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                    <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+                <svg id="micOffIcon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                    <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/>
+                    <path d="M17 16.95A7 7 0 015 12v-2m14 0v2a7 7 0 01-.11 1.23"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                </svg>
+            </button>
+
+            <button class="control-btn active" id="cameraBtn" title="Toggle camera">
+                <svg id="cameraOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 7l-7 5 7 5V7z"/>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                </svg>
+                <svg id="cameraOffIcon" style="display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34l1 1L23 7v10"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+            </button>
+
+            <button class="control-btn" id="screenBtn" title="Share screen">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+            </button>
+
+            <button class="control-btn leave-btn" id="leaveBtn" title="Leave call">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7 2 2 0 011.72 2v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.42 19.42 0 01-6-6 19.79 19.79 0 01-3.07-8.63A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27"/>
+                    <line x1="23" y1="1" x2="17" y2="7"/>
+                    <line x1="17" y1="1" x2="23" y2="7"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="endScreen" class="end-screen">
+        <svg class="end-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        <h2 class="end-title">Session Complete</h2>
+        <p class="end-subtitle">Your 15-minute mentor call has ended. Great conversation!</p>
+        <button class="btn btn-primary" id="newSessionBtn">Start New Session</button>
+    </div>
+
+    <!-- MiniChatCore Scripts -->
+    <script type="importmap">
+    {
+        "imports": {
+            "minichat-core": "https://proto2.makedo.com:8883/v02/scripts/minichat-core.js",
+            "config": "https://proto2.makedo.com:8883/v02/scripts/configServer.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import MiniChatCore from 'minichat-core';
+
+        // Context credentials
+        const CONTEXT_CONFIG = {
+            contextId: 'Kw6w6w6w6w',
+            contextAuthToken: 'Kw6w6w6w6w'
+        };
+
+        // App state
+        let chat = null;
+        let userName = '';
+        let userRole = ''; // 'mentor' or 'mentee'
+        let timerInterval = null;
+        let timeRemaining = 15 * 60; // 15 minutes in seconds
+        let remoteMemberId = null;
+        let localScreencastStream = null; // Store local screen share stream for preview
+
+        // DOM Elements
+        const entryScreen = document.getElementById('entryScreen');
+        const liveRoom = document.getElementById('liveRoom');
+        const endScreen = document.getElementById('endScreen');
+        const nameInput = document.getElementById('nameInput');
+        const roomCodeInput = document.getElementById('roomCodeInput');
+        const startBtn = document.getElementById('startBtn');
+        const joinBtn = document.getElementById('joinBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const roomCodeDisplay = document.getElementById('roomCodeDisplay');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerText = document.getElementById('timerText');
+        const localVideo = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const remoteTile = document.getElementById('remoteTile');
+        const waitingOverlay = document.getElementById('waitingOverlay');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const shareLinkBtn = document.getElementById('shareLinkBtn');
+        const micBtn = document.getElementById('micBtn');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const screenBtn = document.getElementById('screenBtn');
+        const leaveBtn = document.getElementById('leaveBtn');
+        const newSessionBtn = document.getElementById('newSessionBtn');
+        const videoGrid = document.getElementById('videoGrid');
+        const screenShareTile = document.getElementById('screenShareTile');
+        const screenShareVideo = document.getElementById('screenShareVideo');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const pipBtn = document.getElementById('pipBtn');
+        const mentorBtn = document.getElementById('mentorBtn');
+        const menteeBtn = document.getElementById('menteeBtn');
+        const localRoleBadge = document.getElementById('localRoleBadge');
+        const remoteRoleBadge = document.getElementById('remoteRoleBadge');
+
+        // Initialize
+        function init() {
+            chat = new MiniChatCore(CONTEXT_CONFIG);
+            setupEventHandlers();
+            setupUIHandlers();
+            checkUrlForRoomCode();
+        }
+
+        // Check URL for room code (deep linking)
+        function checkUrlForRoomCode() {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            if (code) {
+                roomCodeInput.value = code;
+                updateButtonPriority();
+            }
+        }
+
+        // Update button priority based on room code input
+        function updateButtonPriority() {
+            const hasCode = roomCodeInput.value.trim().length > 0;
+            if (hasCode) {
+                startBtn.classList.remove('btn-primary');
+                startBtn.classList.add('btn-secondary');
+                joinBtn.classList.remove('btn-secondary');
+                joinBtn.classList.add('btn-primary');
+            } else {
+                startBtn.classList.remove('btn-secondary');
+                startBtn.classList.add('btn-primary');
+                joinBtn.classList.remove('btn-primary');
+                joinBtn.classList.add('btn-secondary');
+            }
+        }
+
+        // Setup MiniChatCore event handlers
+        function setupEventHandlers() {
+            chat.setLocalVideoElement(localVideo);
+
+            chat.onLogin = (user) => {
+                console.log('Logged in:', user.username);
+            };
+
+            chat.onChannelSelected = (channel) => {
+                console.log('Channel selected:', channel.title);
+            };
+
+            chat.onJoined = () => {
+                console.log('Joined room');
+                checkExistingMembers();
+
+                // Retry after short delays in case members aren't synced yet
+                setTimeout(checkExistingMembers, 500);
+                setTimeout(checkExistingMembers, 1500);
+                setTimeout(checkExistingMembers, 3000);
+                setTimeout(checkExistingMembers, 5000);
+            };
+
+            chat.onLeft = () => {
+                console.log('Left room');
+                stopTimer();
+            };
+
+            chat.onMemberJoined = (memberId) => {
+                const member = chat.getMember(memberId);
+                console.log('Member joined:', member?.username, member);
+                remoteMemberId = memberId;
+
+                // Show remote tile, hide waiting overlay
+                remoteTile.style.display = 'flex';
+                waitingOverlay.classList.add('hidden');
+
+                // Update remote name
+                updateRemoteName(member, memberId);
+
+                // Show remote role badge (opposite of local role)
+                updateRemoteRoleBadge();
+
+                // Show avatar fallback with off status (video/audio off by default when joining)
+                document.getElementById('remoteAvatar').classList.add('visible');
+                remoteVideo.style.display = 'none';
+
+                // Initialize remote media state (mic icon, etc.)
+                updateRemoteMediaState(memberId);
+
+                // Start timer when both participants are present
+                if (!timerInterval) {
+                    startTimer();
+                }
+            };
+
+            chat.onMemberLeft = (memberId) => {
+                console.log('Member left:', memberId);
+                if (memberId === remoteMemberId) {
+                    // Get the name before clearing for the notification
+                    const leftName = document.getElementById('remoteName').textContent;
+
+                    remoteMemberId = null;
+
+                    // Hide video and avatar, show waiting overlay
+                    remoteVideo.style.display = 'none';
+                    document.getElementById('remoteAvatar').classList.remove('visible');
+                    waitingOverlay.classList.remove('hidden');
+
+                    // Update waiting text to show they left
+                    document.querySelector('#waitingOverlay .waiting-text').textContent = `${leftName} left the call`;
+
+                    // Reset name and initial
+                    document.getElementById('remoteName').textContent = 'Disconnected';
+                    document.getElementById('remoteInitial').textContent = '?';
+
+                    // Hide role badge
+                    document.getElementById('remoteRoleBadge').style.display = 'none';
+
+                    // Show toast notification
+                    showToast(`${leftName} has left the session`);
+                }
+            };
+
+            chat.onMemberStreamStart = (memberId, streamType) => {
+                console.log('Stream started:', memberId, streamType);
+                if (streamType === 'camera') {
+                    // If we haven't detected this member yet, set them up
+                    if (!remoteMemberId) {
+                        remoteMemberId = memberId;
+                        remoteTile.style.display = 'flex';
+                        waitingOverlay.classList.add('hidden');
+
+                        // Show remote role badge
+                        updateRemoteRoleBadge();
+
+                        // Start timer when both participants are present
+                        if (!timerInterval) {
+                            startTimer();
+                        }
+                    }
+
+                    chat.setMemberVideoElement(memberId, streamType, remoteVideo);
+                    document.getElementById('remoteAvatar').classList.remove('visible');
+                    remoteVideo.style.display = 'block';
+
+                    // Try updating name again (might have more info now)
+                    const member = chat.getMember(memberId);
+                    updateRemoteName(member, memberId);
+
+                    // Update media state (mic icon, etc.)
+                    updateRemoteMediaState(memberId);
+                } else if (streamType === 'screencast') {
+                    // Remote screen share started
+                    const member = chat.getMember(memberId);
+                    const name = member?.username || member?.name || 'Guest';
+                    document.getElementById('screenShareName').textContent = `${name}'s Screen`;
+
+                    chat.setMemberVideoElement(memberId, streamType, screenShareVideo);
+                    screenShareTile.style.display = 'flex';
+                    videoGrid.classList.add('screen-sharing');
+                }
+            };
+
+            chat.onMemberStreamEnd = (memberId, streamType) => {
+                console.log('Stream ended:', memberId, streamType);
+                if (streamType === 'camera') {
+                    document.getElementById('remoteAvatar').classList.add('visible');
+                    remoteVideo.style.display = 'none';
+                } else if (streamType === 'screencast') {
+                    // Remote screen share ended
+                    screenShareTile.style.display = 'none';
+                    videoGrid.classList.remove('screen-sharing');
+                    resetTilePositions();
+                }
+            };
+
+            chat.onMemberMediaChange = (memberId, streamType) => {
+                updateRemoteMediaState(memberId);
+
+                // Try updating name again (data might be more complete now)
+                const member = chat.getMember(memberId);
+                updateRemoteName(member, memberId);
+            };
+
+            chat.onLocalMediaChange = () => {
+                updateLocalMediaState();
+            };
+
+            chat.onError = (context, error) => {
+                console.error('Error:', context, error);
+                showError(error.message);
+            };
+        }
+
+        // Setup UI event handlers
+        function setupUIHandlers() {
+            // Room code input changes button priority
+            roomCodeInput.addEventListener('input', updateButtonPriority);
+
+            // Role selection
+            mentorBtn.addEventListener('click', () => selectRole('mentor'));
+            menteeBtn.addEventListener('click', () => selectRole('mentee'));
+
+            // Start room
+            startBtn.addEventListener('click', async () => {
+                const name = nameInput.value.trim();
+                if (!name) {
+                    showError('Please enter your name');
+                    return;
+                }
+                if (!userRole) {
+                    showError('Please select your role (Mentor or Mentee)');
+                    return;
+                }
+                userName = name;
+                await startRoom();
+            });
+
+            // Join room
+            joinBtn.addEventListener('click', async () => {
+                const name = nameInput.value.trim();
+                const code = roomCodeInput.value.trim();
+                if (!name) {
+                    showError('Please enter your name');
+                    return;
+                }
+                if (!userRole) {
+                    showError('Please select your role (Mentor or Mentee)');
+                    return;
+                }
+                if (!code) {
+                    showError('Please enter a room code');
+                    return;
+                }
+                userName = name;
+                await joinRoom(code);
+            });
+
+            // Copy room code
+            copyCodeBtn.addEventListener('click', async () => {
+                const code = roomCodeDisplay.textContent;
+                try {
+                    await navigator.clipboard.writeText(code);
+                    showCopyFeedback(copyCodeBtn, 'Code copied!');
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                    showCopyFeedback(copyCodeBtn, 'Failed to copy');
+                }
+            });
+
+            // Share link
+            shareLinkBtn.addEventListener('click', async () => {
+                const url = window.location.href;
+                try {
+                    await navigator.clipboard.writeText(url);
+                    showCopyFeedback(shareLinkBtn, 'Link copied!');
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                    showCopyFeedback(shareLinkBtn, 'Failed to copy');
+                }
+            });
+
+            // Media controls
+            micBtn.addEventListener('click', () => {
+                chat.toggleAudio();
+            });
+
+            cameraBtn.addEventListener('click', () => {
+                chat.toggleVideo();
+            });
+
+            screenBtn.addEventListener('click', async () => {
+                const wasSharing = localScreencastStream !== null;
+
+                if (!wasSharing) {
+                    // Start screen sharing - capture it ourselves for preview
+                    try {
+                        // Request screen capture from the browser
+                        localScreencastStream = await navigator.mediaDevices.getDisplayMedia({
+                            video: { cursor: 'always' },
+                            audio: false
+                        });
+
+                        // Show the preview immediately
+                        screenShareVideo.srcObject = localScreencastStream;
+                        document.getElementById('screenShareName').textContent = 'Your Screen';
+                        screenShareTile.style.display = 'flex';
+                        videoGrid.classList.add('screen-sharing');
+                        screenBtn.classList.add('active');
+                        screenShareVideo.play().catch(e => console.log('Video play error:', e));
+
+                        // Listen for when the user stops sharing via browser UI (clicking "Stop sharing")
+                        localScreencastStream.getVideoTracks()[0].onended = () => {
+                            stopLocalScreenShare();
+                        };
+
+                        // Also tell MiniChatCore to start sharing (for the remote participant)
+                        chat.toggleScreencast();
+
+                        console.log('Local screen share started with preview');
+                    } catch (err) {
+                        console.log('Screen share cancelled or error:', err);
+                        localScreencastStream = null;
+                    }
+                } else {
+                    // Stop screen sharing
+                    stopLocalScreenShare();
+                    chat.toggleScreencast();
+                }
+            });
+
+            // Helper function to stop local screen share
+            function stopLocalScreenShare() {
+                if (localScreencastStream) {
+                    localScreencastStream.getTracks().forEach(track => track.stop());
+                    localScreencastStream = null;
+                }
+                screenShareVideo.srcObject = null;
+                screenBtn.classList.remove('active');
+
+                // Only hide tile if remote isn't sharing
+                if (!remoteMemberId || !chat.getMember(remoteMemberId)?.hasScreencast) {
+                    screenShareTile.style.display = 'none';
+                    videoGrid.classList.remove('screen-sharing');
+                    resetTilePositions();
+                }
+            }
+
+            // Fullscreen toggle for screen share
+            fullscreenBtn.addEventListener('click', () => {
+                toggleFullscreen();
+            });
+
+            // Picture-in-Picture toggle for screen share
+            pipBtn.addEventListener('click', () => {
+                togglePiP();
+            });
+
+            // Leave
+            leaveBtn.addEventListener('click', () => {
+                leaveRoom();
+            });
+
+            // New session
+            newSessionBtn.addEventListener('click', () => {
+                resetApp();
+            });
+
+            // Enter key handlers
+            nameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    if (roomCodeInput.value.trim()) {
+                        joinBtn.click();
+                    } else {
+                        startBtn.click();
+                    }
+                }
+            });
+
+            roomCodeInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    joinBtn.click();
+                }
+            });
+        }
+
+        // Start a new room
+        async function startRoom() {
+            try {
+                showError('');
+                startBtn.disabled = true;
+
+                await chat.signupAnonymous(userName);
+
+                const channel = await chat.createChannel({
+                    title: `${userName}'s Mentor Call`,
+                    allowsGuests: true
+                });
+
+                await chat.joinByRoomCode(channel.room_code);
+
+                // Display room code immediately
+                roomCodeDisplay.textContent = channel.room_code;
+
+                // Update URL with room code
+                const url = new URL(window.location);
+                url.searchParams.set('code', channel.room_code);
+                window.history.replaceState({}, '', url);
+
+                // Update local name display
+                document.getElementById('localName').textContent = userName;
+                document.getElementById('localInitial').textContent = userName.charAt(0).toUpperCase();
+
+                // Show local role badge
+                updateLocalRoleBadge();
+
+                // Show live room
+                showLiveRoom();
+
+                // Show remote tile with waiting state
+                remoteTile.style.display = 'flex';
+                waitingOverlay.classList.remove('hidden');
+                document.querySelector('#waitingOverlay .waiting-text').textContent = 'Waiting for guest...';
+
+                await chat.join();
+
+                // Auto-enable video so guest can detect us via getMemberIds()
+                // (getMemberIds only returns streaming members)
+                chat.toggleVideo();
+
+                // Update initial media state display
+                updateLocalMediaState();
+
+                // Start polling for guest to join
+                pollForGuest();
+
+            } catch (e) {
+                showError(e.message);
+                startBtn.disabled = false;
+            }
+        }
+
+        // Join existing room
+        async function joinRoom(code) {
+            try {
+                showError('');
+                joinBtn.disabled = true;
+
+                // Check room capacity first
+                await chat.signupAnonymous(userName);
+
+                const channelInfo = await chat.getChannelByRoomCode(code);
+                const memberCount = channelInfo.members ? channelInfo.members.length : 0;
+                if (memberCount >= 2) {
+                    showError('Room is full (max 2 participants)');
+                    joinBtn.disabled = false;
+                    return;
+                }
+
+                await chat.joinByRoomCode(code);
+
+                // Display room code immediately
+                roomCodeDisplay.textContent = code;
+
+                // Update URL with room code
+                const url = new URL(window.location);
+                url.searchParams.set('code', code);
+                window.history.replaceState({}, '', url);
+
+                // Update local name display
+                document.getElementById('localName').textContent = userName;
+                document.getElementById('localInitial').textContent = userName.charAt(0).toUpperCase();
+
+                // Show local role badge
+                updateLocalRoleBadge();
+
+                // Show live room
+                showLiveRoom();
+
+                // Show remote tile with connecting state (different from room creator's "Waiting for guest...")
+                remoteTile.style.display = 'flex';
+                waitingOverlay.classList.remove('hidden');
+                document.querySelector('#waitingOverlay .waiting-text').textContent = 'Connecting...';
+
+                await chat.join();
+
+                // Auto-enable video so host can detect us via onMemberStreamStart
+                // and we can be detected via getMemberIds()
+                chat.toggleVideo();
+
+                // Update initial media state display
+                updateLocalMediaState();
+
+                // Start polling for host (the room creator should already be there)
+                pollForHost();
+
+            } catch (e) {
+                showError(e.message);
+                joinBtn.disabled = false;
+            }
+        }
+
+        // Poll for host (for joiner)
+        let hostPollInterval = null;
+        let hostPollCount = 0;
+        function pollForHost() {
+            // Clear any existing poll
+            if (hostPollInterval) {
+                clearInterval(hostPollInterval);
+            }
+            hostPollCount = 0;
+
+            // Check immediately
+            checkExistingMembers();
+
+            hostPollInterval = setInterval(() => {
+                hostPollCount++;
+
+                // Stop if host already detected
+                if (remoteMemberId) {
+                    clearInterval(hostPollInterval);
+                    hostPollInterval = null;
+                    return;
+                }
+
+                // Check for members
+                const existingMembers = chat.getMemberIds();
+                console.log('Polling for host:', existingMembers);
+
+                if (existingMembers.length > 0) {
+                    checkExistingMembers();
+                    if (remoteMemberId) {
+                        clearInterval(hostPollInterval);
+                        hostPollInterval = null;
+                    }
+                }
+
+                // After 3 seconds (6 polls at 500ms), update message
+                // Note: getMemberIds() only returns streaming members, so host won't appear
+                // until they turn on video. Update message to reflect this.
+                if (hostPollCount === 6 && !remoteMemberId) {
+                    document.querySelector('#waitingOverlay .waiting-text').textContent = 'Waiting for host to enable video...';
+                }
+            }, 500); // Poll every 500ms
+
+            // Stop polling after 30 seconds max
+            setTimeout(() => {
+                if (hostPollInterval) {
+                    clearInterval(hostPollInterval);
+                    hostPollInterval = null;
+                }
+            }, 30 * 1000);
+        }
+
+        // Leave room
+        function leaveRoom() {
+            // Stop polling
+            if (guestPollInterval) {
+                clearInterval(guestPollInterval);
+                guestPollInterval = null;
+            }
+            if (hostPollInterval) {
+                clearInterval(hostPollInterval);
+                hostPollInterval = null;
+            }
+            // Stop local screen share
+            if (localScreencastStream) {
+                localScreencastStream.getTracks().forEach(track => track.stop());
+                localScreencastStream = null;
+            }
+            chat.exitChannel();
+            showEndScreen();
+        }
+
+        // Timer functions
+        function startTimer() {
+            timeRemaining = 15 * 60;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                // Warning at 2 minutes
+                if (timeRemaining === 120) {
+                    timerDisplay.classList.add('warning');
+                }
+
+                // Final warning at 30 seconds
+                if (timeRemaining === 30) {
+                    timerDisplay.classList.remove('warning');
+                    timerDisplay.classList.add('ending');
+                }
+
+                // Auto-end at 0
+                if (timeRemaining <= 0) {
+                    stopTimer();
+                    leaveRoom();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Update local media state UI
+        function updateLocalMediaState() {
+            const state = chat.localMediaState;
+            const screenState = chat.screencastState;
+
+            // Mic button
+            const micOn = state.audio && !state.audioMuted;
+            micBtn.classList.toggle('active', micOn);
+            micBtn.classList.toggle('off', !micOn);
+            document.getElementById('micOnIcon').style.display = micOn ? 'block' : 'none';
+            document.getElementById('micOffIcon').style.display = micOn ? 'none' : 'block';
+
+            // Local mic icon in tile
+            document.getElementById('localMicOnIcon').style.display = micOn ? 'block' : 'none';
+            document.getElementById('localMicOffIcon').style.display = micOn ? 'none' : 'block';
+
+            // Camera button
+            const cameraOn = state.video && !state.videoMuted;
+            cameraBtn.classList.toggle('active', cameraOn);
+            cameraBtn.classList.toggle('off', !cameraOn);
+            document.getElementById('cameraOnIcon').style.display = cameraOn ? 'block' : 'none';
+            document.getElementById('cameraOffIcon').style.display = cameraOn ? 'none' : 'block';
+
+            // Local avatar
+            document.getElementById('localAvatar').classList.toggle('visible', !cameraOn);
+            localVideo.style.display = cameraOn ? 'block' : 'none';
+
+            // Update avatar status indicators
+            const localVideoStatus = document.getElementById('localVideoStatus');
+            const localAudioStatus = document.getElementById('localAudioStatus');
+            localVideoStatus.classList.toggle('off', !cameraOn);
+            localVideoStatus.innerHTML = cameraOn
+                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Video on`
+                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34l1 1L23 7v10"/><line x1="1" y1="1" x2="23" y2="23"/></svg>Video off`;
+            localAudioStatus.classList.toggle('off', !micOn);
+            localAudioStatus.innerHTML = micOn
+                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>Audio on`
+                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M17 16.95A7 7 0 015 12v-2m14 0v2a7 7 0 01-.11 1.23"/></svg>Audio off`;
+
+            // Screen share button state is managed by the click handler
+            // Update button state based on our tracked stream
+            screenBtn.classList.toggle('active', localScreencastStream !== null);
+        }
+
+        // Check for existing members in the room
+        function checkExistingMembers() {
+            const existingMembers = chat.getMemberIds();
+            console.log('Checking existing members:', existingMembers);
+
+            existingMembers.forEach(memberId => {
+                const member = chat.getMember(memberId);
+                console.log('Found member:', member?.username, member);
+
+                if (!remoteMemberId) {
+                    remoteMemberId = memberId;
+
+                    // Show remote tile, hide waiting overlay
+                    remoteTile.style.display = 'flex';
+                    waitingOverlay.classList.add('hidden');
+
+                    // Update remote name
+                    updateRemoteName(member, memberId);
+
+                    // Show remote role badge
+                    updateRemoteRoleBadge();
+
+                    // Attach video if they have a camera stream, otherwise show avatar
+                    if (member?.hasCamera) {
+                        chat.setMemberVideoElement(memberId, 'camera', remoteVideo);
+                        document.getElementById('remoteAvatar').classList.remove('visible');
+                        remoteVideo.style.display = 'block';
+                    } else {
+                        // Show avatar fallback with off status
+                        document.getElementById('remoteAvatar').classList.add('visible');
+                        remoteVideo.style.display = 'none';
+                    }
+
+                    // Initialize remote media state (mic icon, etc.)
+                    updateRemoteMediaState(memberId);
+
+                    // Start timer when both participants are present
+                    if (!timerInterval) {
+                        startTimer();
+                    }
+                } else if (remoteMemberId === memberId) {
+                    // Update name in case it wasn't available before
+                    updateRemoteName(member, memberId);
+                    // Update media state too
+                    updateRemoteMediaState(memberId);
+                }
+            });
+
+            // Also update remote role badge if we found someone
+            if (remoteMemberId) {
+                updateRemoteRoleBadge();
+            }
+        }
+
+        // Role selection
+        function selectRole(role) {
+            userRole = role;
+
+            // Update button states
+            mentorBtn.classList.toggle('selected', role === 'mentor');
+            menteeBtn.classList.toggle('selected', role === 'mentee');
+
+            // Clear any error
+            showError('');
+        }
+
+        // Update local role badge display
+        function updateLocalRoleBadge() {
+            if (userRole) {
+                localRoleBadge.textContent = userRole === 'mentor' ? 'Mentor' : 'Mentee';
+                localRoleBadge.className = `role-badge ${userRole}`;
+                localRoleBadge.style.display = 'block';
+            }
+        }
+
+        // Update remote role badge (opposite of local)
+        function updateRemoteRoleBadge() {
+            if (userRole) {
+                const remoteRole = userRole === 'mentor' ? 'mentee' : 'mentor';
+                remoteRoleBadge.textContent = remoteRole === 'mentor' ? 'Mentor' : 'Mentee';
+                remoteRoleBadge.className = `role-badge ${remoteRole}`;
+                remoteRoleBadge.style.display = 'block';
+            }
+        }
+
+        // Poll for guest joining (for room creator)
+        let guestPollInterval = null;
+        function pollForGuest() {
+            // Clear any existing poll
+            if (guestPollInterval) {
+                clearInterval(guestPollInterval);
+            }
+
+            guestPollInterval = setInterval(() => {
+                // Stop if guest already detected
+                if (remoteMemberId) {
+                    clearInterval(guestPollInterval);
+                    guestPollInterval = null;
+                    return;
+                }
+
+                // Check for members
+                const existingMembers = chat.getMemberIds();
+                console.log('Polling for guest:', existingMembers);
+
+                if (existingMembers.length > 0) {
+                    checkExistingMembers();
+                    if (remoteMemberId) {
+                        clearInterval(guestPollInterval);
+                        guestPollInterval = null;
+                    }
+                }
+            }, 1000); // Poll every second
+
+            // Stop polling after 5 minutes max
+            setTimeout(() => {
+                if (guestPollInterval) {
+                    clearInterval(guestPollInterval);
+                    guestPollInterval = null;
+                }
+            }, 5 * 60 * 1000);
+        }
+
+        // Update remote participant name
+        function updateRemoteName(member, memberId = null) {
+            const name = member?.username || member?.name || member?.displayName || null;
+            console.log('updateRemoteName called with:', { name, member, memberId });
+            if (name) {
+                document.getElementById('remoteName').textContent = name;
+                document.getElementById('remoteInitial').textContent = name.charAt(0).toUpperCase();
+            } else if (memberId) {
+                // Show memberId as last resort (truncated)
+                const shortId = memberId.substring(0, 8);
+                document.getElementById('remoteName').textContent = `User ${shortId}`;
+                document.getElementById('remoteInitial').textContent = 'U';
+            }
+        }
+
+        // Update remote media state UI
+        function updateRemoteMediaState(memberId) {
+            const states = chat.getMemberMediaStates(memberId);
+
+            // Default to off if states not available yet
+            const audioOn = states ? states.cam_audio_detail === 'ON' : false;
+            const videoOn = states ? states.cam_video_detail === 'ON' : false;
+
+            // Update mic icon in tile
+            document.getElementById('remoteMicOnIcon').style.display = audioOn ? 'block' : 'none';
+            document.getElementById('remoteMicOffIcon').style.display = audioOn ? 'none' : 'block';
+
+            // Update video/avatar display
+            document.getElementById('remoteAvatar').classList.toggle('visible', !videoOn);
+            remoteVideo.style.display = videoOn ? 'block' : 'none';
+
+            // Update remote avatar status indicators
+            const remoteVideoStatus = document.getElementById('remoteVideoStatus');
+            const remoteAudioStatus = document.getElementById('remoteAudioStatus');
+            remoteVideoStatus.classList.toggle('off', !videoOn);
+            remoteVideoStatus.innerHTML = videoOn
+                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>Video on`
+                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34l1 1L23 7v10"/><line x1="1" y1="1" x2="23" y2="23"/></svg>Video off`;
+            remoteAudioStatus.classList.toggle('off', !audioOn);
+            remoteAudioStatus.innerHTML = audioOn
+                ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>Audio on`
+                : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M17 16.95A7 7 0 015 12v-2m14 0v2a7 7 0 01-.11 1.23"/></svg>Audio off`;
+        }
+
+        // Toggle fullscreen for screen share
+        function toggleFullscreen() {
+            const elem = screenShareTile;
+
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                // Enter fullscreen
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                }
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        // Update fullscreen button icon
+        function updateFullscreenIcon() {
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+            document.getElementById('fullscreenEnterIcon').style.display = isFullscreen ? 'none' : 'block';
+            document.getElementById('fullscreenExitIcon').style.display = isFullscreen ? 'block' : 'none';
+        }
+
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', updateFullscreenIcon);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+        // Toggle Picture-in-Picture for screen share
+        async function togglePiP() {
+            try {
+                if (document.pictureInPictureElement) {
+                    // Exit PiP
+                    await document.exitPictureInPicture();
+                } else if (document.pictureInPictureEnabled) {
+                    // Enter PiP
+                    await screenShareVideo.requestPictureInPicture();
+                }
+            } catch (error) {
+                console.error('PiP error:', error);
+            }
+        }
+
+        // Update PiP button icon
+        function updatePiPIcon() {
+            const isInPiP = document.pictureInPictureElement === screenShareVideo;
+            document.getElementById('pipEnterIcon').style.display = isInPiP ? 'none' : 'block';
+            document.getElementById('pipExitIcon').style.display = isInPiP ? 'block' : 'none';
+            pipBtn.classList.toggle('active', isInPiP);
+        }
+
+        // Listen for PiP changes
+        screenShareVideo.addEventListener('enterpictureinpicture', updatePiPIcon);
+        screenShareVideo.addEventListener('leavepictureinpicture', updatePiPIcon);
+
+        // Draggable camera tiles during screen share
+        function makeDraggable(element) {
+            let isDragging = false;
+            let startX, startY, startLeft, startBottom;
+
+            element.addEventListener('mousedown', startDrag);
+            element.addEventListener('touchstart', startDrag, { passive: false });
+
+            function startDrag(e) {
+                // Only enable dragging during screen share
+                if (!videoGrid.classList.contains('screen-sharing')) return;
+
+                isDragging = true;
+                element.classList.add('dragging');
+
+                const rect = element.getBoundingClientRect();
+                const parentRect = videoGrid.getBoundingClientRect();
+
+                if (e.type === 'touchstart') {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                } else {
+                    startX = e.clientX;
+                    startY = e.clientY;
+                }
+
+                // Calculate current position from bottom-right
+                startLeft = rect.left - parentRect.left;
+                startBottom = parentRect.bottom - rect.bottom;
+
+                document.addEventListener('mousemove', drag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchmove', drag, { passive: false });
+                document.addEventListener('touchend', stopDrag);
+
+                e.preventDefault();
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+
+                let clientX, clientY;
+                if (e.type === 'touchmove') {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
+                const deltaX = clientX - startX;
+                const deltaY = startY - clientY; // Inverted because we use bottom
+
+                const parentRect = videoGrid.getBoundingClientRect();
+                const elemRect = element.getBoundingClientRect();
+
+                // Calculate new position
+                let newLeft = startLeft + deltaX;
+                let newBottom = startBottom + deltaY;
+
+                // Constrain to parent bounds
+                const maxLeft = parentRect.width - elemRect.width - 4;
+                const maxBottom = parentRect.height - elemRect.height - 4;
+
+                newLeft = Math.max(4, Math.min(newLeft, maxLeft));
+                newBottom = Math.max(4, Math.min(newBottom, maxBottom));
+
+                // Apply position
+                element.style.left = newLeft + 'px';
+                element.style.right = 'auto';
+                element.style.bottom = newBottom + 'px';
+                element.style.top = 'auto';
+
+                e.preventDefault();
+            }
+
+            function stopDrag() {
+                isDragging = false;
+                element.classList.remove('dragging');
+
+                document.removeEventListener('mousemove', drag);
+                document.removeEventListener('mouseup', stopDrag);
+                document.removeEventListener('touchmove', drag);
+                document.removeEventListener('touchend', stopDrag);
+            }
+        }
+
+        // Make both camera tiles draggable
+        makeDraggable(localTile);
+        makeDraggable(remoteTile);
+
+        // Reset tile positions when screen share ends
+        function resetTilePositions() {
+            localTile.style.left = '';
+            localTile.style.right = '';
+            localTile.style.bottom = '';
+            localTile.style.top = '';
+            remoteTile.style.left = '';
+            remoteTile.style.right = '';
+            remoteTile.style.bottom = '';
+            remoteTile.style.top = '';
+        }
+
+        // Show copy feedback (checkmark + toast)
+        function showCopyFeedback(button, message) {
+            const originalHtml = button.innerHTML;
+            button.innerHTML = `
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                </svg>
+            `;
+            button.classList.add('copied');
+
+            // Show toast notification
+            showToast(message);
+
+            setTimeout(() => {
+                button.innerHTML = originalHtml;
+                button.classList.remove('copied');
+            }, 2000);
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            // Remove existing toast if any
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+
+            // Remove after delay
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        // Screen transitions
+        function showLiveRoom() {
+            entryScreen.classList.add('hidden');
+            liveRoom.classList.add('active');
+            endScreen.classList.remove('active');
+        }
+
+        function showEndScreen() {
+            liveRoom.classList.remove('active');
+            endScreen.classList.add('active');
+        }
+
+        function resetApp() {
+            // Stop guest polling
+            if (guestPollInterval) {
+                clearInterval(guestPollInterval);
+                guestPollInterval = null;
+            }
+
+            // Stop host polling
+            if (hostPollInterval) {
+                clearInterval(hostPollInterval);
+                hostPollInterval = null;
+            }
+
+            // Reset state
+            timeRemaining = 15 * 60;
+            remoteMemberId = null;
+            userRole = '';
+            timerDisplay.classList.remove('warning', 'ending');
+            updateTimerDisplay();
+
+            // Reset screen share
+            if (localScreencastStream) {
+                localScreencastStream.getTracks().forEach(track => track.stop());
+                localScreencastStream = null;
+            }
+            screenShareVideo.srcObject = null;
+            screenShareTile.style.display = 'none';
+            videoGrid.classList.remove('screen-sharing');
+            resetTilePositions();
+
+            // Reset role badges
+            localRoleBadge.style.display = 'none';
+            remoteRoleBadge.style.display = 'none';
+            mentorBtn.classList.remove('selected');
+            menteeBtn.classList.remove('selected');
+
+            // Reset waiting overlay text
+            document.querySelector('#waitingOverlay .waiting-text').textContent = 'Waiting for guest...';
+
+            // Reset UI
+            startBtn.disabled = false;
+            joinBtn.disabled = false;
+            roomCodeInput.value = '';
+            updateButtonPriority();
+
+            // Clear URL params
+            const url = new URL(window.location);
+            url.searchParams.delete('code');
+            window.history.replaceState({}, '', url);
+
+            // Show entry screen
+            endScreen.classList.remove('active');
+            entryScreen.classList.remove('hidden');
+
+            // Reinitialize chat
+            chat = new MiniChatCore(CONTEXT_CONFIG);
+            setupEventHandlers();
+        }
+
+        // Show error message
+        function showError(message) {
+            errorMessage.textContent = message;
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>

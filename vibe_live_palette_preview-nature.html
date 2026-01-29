@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VibeLive Nature Calm – Color Palette Preview</title>
+  <style>
+    :root{
+      --radius: 16px;
+      --max: 980px;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+
+      /* Surfaces */
+      --bg: #F1F3F0;
+      --card: #FAF9F6;
+      --soft: #E6ECDC;
+      --border: #E4E7E3;
+      --borderSoft: #D7DDD8;
+
+      /* Text */
+      --text: #2A302E;
+      --muted: #5F6B66;
+      --muted2: #9AA5A0;
+
+      /* Brand (identity) */
+      --brand: #8DA399;
+      --brandSoft: rgba(141,163,153,.18);
+
+      /* Actions */
+      --accent: #556B2F;
+      --accentHover: #495C28;
+      --accentSoft: rgba(85,107,47,.12);
+      --accentBorder: rgba(85,107,47,.30);
+
+      /* Status */
+      --liveBg: #E3E9E1;
+      --liveBorder: #CBD5C8;
+      --liveText: #3A443F;
+
+      --disabledBg: #ECEFED;
+      --disabledBorder: #E4E7E3;
+      --disabledText: #9AA5A0;
+
+      --dangerBg: #F2E8E6;
+      --dangerBorder: #E3C7C2;
+      --dangerText: #8B4A3E;
+
+      --overlay: rgba(42, 48, 46, 0.45);
+    }
+
+    *{ box-sizing: border-box; }
+    body{
+      margin: 0;
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+    }
+    .wrap{
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 28px 16px 48px;
+    }
+    header{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 18px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    h1{
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: .2px;
+    }
+    .sub{
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .chip{
+      border-radius: 999px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      background: var(--soft);
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    section{ margin-top: 16px; }
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 12px;
+    }
+    @media (max-width: 720px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .swatch{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .color{
+      height: 74px;
+      border-bottom: 1px solid var(--border);
+    }
+    .meta{
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .left{
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .name{
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .desc{
+      font-size: 12px;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: rgba(230,236,220,.55);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    /* swatch blocks */
+    .bg{ background: var(--bg); }
+    .card{ background: var(--card); }
+    .soft{ background: var(--soft); }
+    .border{ background: var(--border); }
+    .borderSoft{ background: var(--borderSoft); }
+
+    .text{ background: var(--text); }
+    .muted{ background: var(--muted); }
+    .muted2{ background: var(--muted2); }
+
+    .brand{ background: var(--brand); }
+    .brandSoft{ background: linear-gradient(0deg, var(--brandSoft), var(--brandSoft)); }
+
+    .accent{ background: var(--accent); }
+    .accentHover{ background: var(--accentHover); }
+    .accentSoft{ background: linear-gradient(0deg, var(--accentSoft), var(--accentSoft)); }
+    .accentBorder{ background: linear-gradient(0deg, var(--accentBorder), var(--accentBorder)); }
+
+    .liveBg{ background: var(--liveBg); }
+    .liveBorder{ background: var(--liveBorder); }
+    .liveText{ background: var(--liveText); }
+
+    .disabledBg{ background: var(--disabledBg); }
+    .disabledBorder{ background: var(--disabledBorder); }
+    .disabledText{ background: var(--disabledText); }
+
+    .dangerBg{ background: var(--dangerBg); }
+    .dangerBorder{ background: var(--dangerBorder); }
+    .dangerText{ background: var(--dangerText); }
+
+    .overlay{ background: var(--overlay); }
+
+    footer{
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>VibeLive Nature Calm – Default Color Tokens</h1>
+        <p class="sub">Soft sage + olive actions • designed for long, comfortable sessions.</p>
+      </div>
+      <span class="chip">CTA: #556B2F</span>
+    </header>
+
+    <section>
+      <div class="grid">
+        <!-- Surfaces -->
+        <div class="swatch"><div class="color bg"></div><div class="meta"><div class="left"><div class="name">--bg</div><div class="desc">Main background (mist sage)</div></div><div class="code">#F1F3F0</div></div></div>
+        <div class="swatch"><div class="color card"></div><div class="meta"><div class="left"><div class="name">--card</div><div class="desc">Cards / modals (soft linen)</div></div><div class="code">#FAF9F6</div></div></div>
+        <div class="swatch"><div class="color soft"></div><div class="meta"><div class="left"><div class="name">--soft</div><div class="desc">Subtle highlights / rows</div></div><div class="code">#E6ECDC</div></div></div>
+        <div class="swatch"><div class="color border"></div><div class="meta"><div class="left"><div class="name">--border</div><div class="desc">Dividers / outlines</div></div><div class="code">#E4E7E3</div></div></div>
+        <div class="swatch"><div class="color borderSoft"></div><div class="meta"><div class="left"><div class="name">--borderSoft</div><div class="desc">Hover / emphasis border</div></div><div class="code">#D7DDD8</div></div></div>
+
+        <!-- Text -->
+        <div class="swatch"><div class="color text"></div><div class="meta"><div class="left"><div class="name">--text</div><div class="desc">Primary text (deep forest)</div></div><div class="code">#2A302E</div></div></div>
+        <div class="swatch"><div class="color muted"></div><div class="meta"><div class="left"><div class="name">--muted</div><div class="desc">Secondary text</div></div><div class="code">#5F6B66</div></div></div>
+        <div class="swatch"><div class="color muted2"></div><div class="meta"><div class="left"><div class="name">--muted2</div><div class="desc">Tertiary / helper text</div></div><div class="code">#9AA5A0</div></div></div>
+
+        <!-- Brand -->
+        <div class="swatch"><div class="color brand"></div><div class="meta"><div class="left"><div class="name">--brand</div><div class="desc">Identity (dusty sage)</div></div><div class="code">#8DA399</div></div></div>
+        <div class="swatch"><div class="color brandSoft"></div><div class="meta"><div class="left"><div class="name">--brandSoft</div><div class="desc">Soft brand tint</div></div><div class="code">rgba(141,163,153,.18)</div></div></div>
+
+        <!-- Actions -->
+        <div class="swatch"><div class="color accent"></div><div class="meta"><div class="left"><div class="name">--accent</div><div class="desc">Primary CTA (olive)</div></div><div class="code">#556B2F</div></div></div>
+        <div class="swatch"><div class="color accentHover"></div><div class="meta"><div class="left"><div class="name">--accentHover</div><div class="desc">Hover / pressed</div></div><div class="code">#495C28</div></div></div>
+        <div class="swatch"><div class="color accentSoft"></div><div class="meta"><div class="left"><div class="name">--accentSoft</div><div class="desc">Selected background tint</div></div><div class="code">rgba(85,107,47,.12)</div></div></div>
+        <div class="swatch"><div class="color accentBorder"></div><div class="meta"><div class="left"><div class="name">--accentBorder</div><div class="desc">Focus / outline</div></div><div class="code">rgba(85,107,47,.30)</div></div></div>
+
+        <!-- Status -->
+        <div class="swatch"><div class="color liveBg"></div><div class="meta"><div class="left"><div class="name">--liveBg</div><div class="desc">Live / active background</div></div><div class="code">#E3E9E1</div></div></div>
+        <div class="swatch"><div class="color liveBorder"></div><div class="meta"><div class="left"><div class="name">--liveBorder</div><div class="desc">Live / active border</div></div><div class="code">#CBD5C8</div></div></div>
+        <div class="swatch"><div class="color liveText"></div><div class="meta"><div class="left"><div class="name">--liveText</div><div class="desc">Live / active text</div></div><div class="code">#3A443F</div></div></div>
+
+        <div class="swatch"><div class="color disabledBg"></div><div class="meta"><div class="left"><div class="name">--disabledBg</div><div class="desc">Disabled background</div></div><div class="code">#ECEFED</div></div></div>
+        <div class="swatch"><div class="color disabledBorder"></div><div class="meta"><div class="left"><div class="name">--disabledBorder</div><div class="desc">Disabled border</div></div><div class="code">#E4E7E3</div></div></div>
+        <div class="swatch"><div class="color disabledText"></div><div class="meta"><div class="left"><div class="name">--disabledText</div><div class="desc">Disabled text</div></div><div class="code">#9AA5A0</div></div></div>
+
+        <!-- Danger -->
+        <div class="swatch"><div class="color dangerBg"></div><div class="meta"><div class="left"><div class="name">--dangerBg</div><div class="desc">Error background (muted clay)</div></div><div class="code">#F2E8E6</div></div></div>
+        <div class="swatch"><div class="color dangerBorder"></div><div class="meta"><div class="left"><div class="name">--dangerBorder</div><div class="desc">Error border</div></div><div class="code">#E3C7C2</div></div></div>
+        <div class="swatch"><div class="color dangerText"></div><div class="meta"><div class="left"><div class="name">--dangerText</div><div class="desc">Error text</div></div><div class="code">#8B4A3E</div></div></div>
+
+        <!-- Overlay -->
+        <div class="swatch"><div class="color overlay"></div><div class="meta"><div class="left"><div class="name">--overlay</div><div class="desc">Modal backdrop</div></div><div class="code">rgba(42,48,46,.45)</div></div></div>
+      </div>
+    </section>
+
+    <footer>
+      Tip: Use <code>--card</code> sparingly and keep <code>--bg</code> dominant to preserve the calm, misty feel.
+    </footer>
+  </div>
+</body>
+</html>
