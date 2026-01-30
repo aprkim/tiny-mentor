@@ -1287,9 +1287,7 @@
                 updateRemoteName(member, memberId);
                 updateRemoteRoleBadge();
 
-                // Keep waiting overlay visible - update text to show someone is connecting
-                const name = member?.username || member?.name || 'Guest';
-                document.querySelector('#waitingOverlay .waiting-text').textContent = `${name} is connecting...`;
+                // Keep waiting overlay visible until onMemberStreamStart fires
             };
 
             chat.onMemberLeft = (memberId) => {
