@@ -1271,13 +1271,6 @@
 
             chat.onJoined = () => {
                 console.log('Joined room');
-                checkExistingMembers();
-
-                // Retry after short delays in case members aren't synced yet
-                setTimeout(checkExistingMembers, 500);
-                setTimeout(checkExistingMembers, 1500);
-                setTimeout(checkExistingMembers, 3000);
-                setTimeout(checkExistingMembers, 5000);
             };
 
             chat.onLeft = () => {
@@ -1367,7 +1360,7 @@
                     const member = chat.getMember(memberId);
                     updateRemoteName(member, memberId);
 
-                    // Update media state (mic icon, etc.)
+                    // Update media state indicators (mic icon, status text)
                     updateRemoteMediaState(memberId);
                 } else if (streamType === 'screencast') {
                     // Remote screen share started
@@ -1624,15 +1617,11 @@
 
                 await chat.join();
 
-                // Auto-enable video so guest can detect us via getMemberIds()
-                // (getMemberIds only returns streaming members)
+                // Auto-enable video
                 chat.toggleVideo();
 
                 // Update initial media state display
                 updateLocalMediaState();
-
-                // Start polling for guest to join
-                pollForGuest();
 
             } catch (e) {
                 showError(e.message);
@@ -1684,15 +1673,11 @@
 
                 await chat.join();
 
-                // Auto-enable video so host can detect us via onMemberStreamStart
-                // and we can be detected via getMemberIds()
+                // Auto-enable video
                 chat.toggleVideo();
 
                 // Update initial media state display
                 updateLocalMediaState();
-
-                // Start polling for host (the room creator should already be there)
-                pollForHost();
 
             } catch (e) {
                 showError(e.message);
@@ -1700,69 +1685,8 @@
             }
         }
 
-        // Poll for host (for joiner)
-        let hostPollInterval = null;
-        let hostPollCount = 0;
-        function pollForHost() {
-            // Clear any existing poll
-            if (hostPollInterval) {
-                clearInterval(hostPollInterval);
-            }
-            hostPollCount = 0;
-
-            // Check immediately
-            checkExistingMembers();
-
-            hostPollInterval = setInterval(() => {
-                hostPollCount++;
-
-                // Stop if host already detected
-                if (remoteMemberId) {
-                    clearInterval(hostPollInterval);
-                    hostPollInterval = null;
-                    return;
-                }
-
-                // Check for members
-                const existingMembers = chat.getMemberIds();
-                console.log('Polling for host:', existingMembers);
-
-                if (existingMembers.length > 0) {
-                    checkExistingMembers();
-                    if (remoteMemberId) {
-                        clearInterval(hostPollInterval);
-                        hostPollInterval = null;
-                    }
-                }
-
-                // After 3 seconds (6 polls at 500ms), update message
-                // Note: getMemberIds() only returns streaming members, so host won't appear
-                // until they turn on video. Update message to reflect this.
-                if (hostPollCount === 6 && !remoteMemberId) {
-                    document.querySelector('#waitingOverlay .waiting-text').textContent = 'Waiting for host to enable video...';
-                }
-            }, 500); // Poll every 500ms
-
-            // Stop polling after 30 seconds max
-            setTimeout(() => {
-                if (hostPollInterval) {
-                    clearInterval(hostPollInterval);
-                    hostPollInterval = null;
-                }
-            }, 30 * 1000);
-        }
-
         // Leave room
         function leaveRoom() {
-            // Stop polling
-            if (guestPollInterval) {
-                clearInterval(guestPollInterval);
-                guestPollInterval = null;
-            }
-            if (hostPollInterval) {
-                clearInterval(hostPollInterval);
-                hostPollInterval = null;
-            }
             // Stop local screen share
             if (localScreencastStream) {
                 localScreencastStream.getTracks().forEach(track => track.stop());
@@ -1856,60 +1780,6 @@
             screenBtn.classList.toggle('active', localScreencastStream !== null);
         }
 
-        // Check for existing members in the room
-        function checkExistingMembers() {
-            const existingMembers = chat.getMemberIds();
-            console.log('Checking existing members:', existingMembers);
-
-            existingMembers.forEach(memberId => {
-                const member = chat.getMember(memberId);
-                console.log('Found member:', member?.username, member);
-
-                if (!remoteMemberId) {
-                    remoteMemberId = memberId;
-
-                    // Show remote tile, hide waiting overlay
-                    remoteTile.style.display = 'flex';
-                    waitingOverlay.classList.add('hidden');
-
-                    // Update remote name
-                    updateRemoteName(member, memberId);
-
-                    // Show remote role badge
-                    updateRemoteRoleBadge();
-
-                    // Attach video if they have a camera stream, otherwise show avatar
-                    if (member?.hasCamera) {
-                        chat.setMemberVideoElement(memberId, 'camera', remoteVideo);
-                        document.getElementById('remoteAvatar').classList.remove('visible');
-                        remoteVideo.style.display = 'block';
-                    } else {
-                        // Show avatar fallback with off status
-                        document.getElementById('remoteAvatar').classList.add('visible');
-                        remoteVideo.style.display = 'none';
-                    }
-
-                    // Initialize remote media state (mic icon, etc.)
-                    updateRemoteMediaState(memberId);
-
-                    // Start timer when both participants are present
-                    if (!timerInterval) {
-                        startTimer();
-                    }
-                } else if (remoteMemberId === memberId) {
-                    // Update name in case it wasn't available before
-                    updateRemoteName(member, memberId);
-                    // Update media state too
-                    updateRemoteMediaState(memberId);
-                }
-            });
-
-            // Also update remote role badge if we found someone
-            if (remoteMemberId) {
-                updateRemoteRoleBadge();
-            }
-        }
-
         // Role selection
         function selectRole(role) {
             userRole = role;
@@ -1941,44 +1811,6 @@
             }
         }
 
-        // Poll for guest joining (for room creator)
-        let guestPollInterval = null;
-        function pollForGuest() {
-            // Clear any existing poll
-            if (guestPollInterval) {
-                clearInterval(guestPollInterval);
-            }
-
-            guestPollInterval = setInterval(() => {
-                // Stop if guest already detected
-                if (remoteMemberId) {
-                    clearInterval(guestPollInterval);
-                    guestPollInterval = null;
-                    return;
-                }
-
-                // Check for members
-                const existingMembers = chat.getMemberIds();
-                console.log('Polling for guest:', existingMembers);
-
-                if (existingMembers.length > 0) {
-                    checkExistingMembers();
-                    if (remoteMemberId) {
-                        clearInterval(guestPollInterval);
-                        guestPollInterval = null;
-                    }
-                }
-            }, 1000); // Poll every second
-
-            // Stop polling after 5 minutes max
-            setTimeout(() => {
-                if (guestPollInterval) {
-                    clearInterval(guestPollInterval);
-                    guestPollInterval = null;
-                }
-            }, 5 * 60 * 1000);
-        }
-
         // Update remote participant name
         function updateRemoteName(member, memberId = null) {
             const name = member?.username || member?.name || member?.displayName || null;
@@ -1994,7 +1826,8 @@
             }
         }
 
-        // Update remote media state UI
+        // Update remote media state UI (mic icons and status indicators only)
+        // Video/avatar visibility is controlled exclusively by onMemberStreamStart/End
         function updateRemoteMediaState(memberId) {
             const states = chat.getMemberMediaStates(memberId);
 
@@ -2005,10 +1838,6 @@
             // Update mic icon in tile
             document.getElementById('remoteMicOnIcon').style.display = audioOn ? 'block' : 'none';
             document.getElementById('remoteMicOffIcon').style.display = audioOn ? 'none' : 'block';
-
-            // Update video/avatar display
-            document.getElementById('remoteAvatar').classList.toggle('visible', !videoOn);
-            remoteVideo.style.display = videoOn ? 'block' : 'none';
 
             // Update remote avatar status indicators
             const remoteVideoStatus = document.getElementById('remoteVideoStatus');
@@ -2240,18 +2069,6 @@
         }
 
         function resetApp() {
-            // Stop guest polling
-            if (guestPollInterval) {
-                clearInterval(guestPollInterval);
-                guestPollInterval = null;
-            }
-
-            // Stop host polling
-            if (hostPollInterval) {
-                clearInterval(hostPollInterval);
-                hostPollInterval = null;
-            }
-
             // Reset state
             timeRemaining = 15 * 60;
             remoteMemberId = null;
