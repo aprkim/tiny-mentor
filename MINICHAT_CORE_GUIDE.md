@@ -1,4 +1,4 @@
-# MiniChatCore Developer Guide v0.26 January 28, 2026 3:56pm
+# MiniChatCore Developer Guide v0.27 January 30, 2026 12:46pm
 
 **Add video chat to your app with minimal JavaScript**
 
@@ -118,14 +118,15 @@ For the simplest anonymous flow:
 await chat.signupAnonymous('MyName');
 await chat.joinByRoomCode('ROOM_CODE');  // Join by room code
 // OR: await chat.joinByChannelId(channelId);  // Join by channel ID
-await chat.join();  // Actually connect to WebRTC
+await chat.join();      // Establish WebRTC connection (enter LIVE mode)
+// OR: await chat.goLive();  // Convenience method (same as join)
 ```
 
-### Step 3b: Leave or Exit
+### Step 3b: Return to Lobby or Exit
 
 ```javascript
-chat.leave();        // Disconnect but keep camera/mic running (quick rejoin)
-chat.exitChannel();  // Full teardown: stops all tracks, releases camera (light turns off)
+chat.returnToLobby();  // Return to lobby (disconnect WebRTC, keep observing)
+chat.exitChannel();    // Full teardown: stops all tracks, releases camera (light turns off)
 ```
 
 Use `exitChannel()` when the user is done with the session. It directly stops all media tracks, ensuring the camera indicator light turns off immediately.
@@ -151,15 +152,18 @@ chat.toggleMuteAudio();  // Mute mic (keeps streaming, sends silence)
 | `onChannelsLoaded` | `(channels[])` | After `loadChannels()` completes |
 | `onUsersLoaded` | `(users[])` | After `loadUsers()` completes |
 | `onChannelSelected` | `(channel)` | After `selectChannel()`, `selectUser()`, `joinByChannelId()`, or `joinByRoomCode()` |
-| `onJoined` | none | Successfully connected to room |
-| `onLeft` | none | Disconnected from room |
-| `onMemberJoined` | `(memberId)` | New member entered the room |
-| `onMemberLeft` | `(memberId)` | Member left the room |
+| `onJoined` | none | Successfully connected to room (you went LIVE) |
+| `onLeft` | none | Disconnected from room (you returned to LOBBY) |
+| `onMemberJoined` | `(memberId)` | New member entered the room *(excludes self)* |
+| `onMemberLeft` | `(memberId)` | Member left the room *(excludes self)* |
+| `onMemberUpdate` | `(memberId)` | Member status/info changed *(includes self)* |
 | `onMemberStreamStart` | `(memberId, streamType)` | Member's video stream is available |
 | `onMemberStreamEnd` | `(memberId, streamType)` | Member stopped streaming |
 | `onMemberMediaChange` | `(memberId, streamType)` | Member muted/unmuted |
 | `onLocalMediaChange` | none | Your own media state changed |
 | `onError` | `(context, error)` | Something went wrong |
+
+**Important:** `onMemberUpdate` fires for **all members including yourself**. This is intentionalâ€”if you're displaying your own placeholder tile with a status badge, it needs updating too. Use `memberId === chat.currentMemberId` to distinguish if needed.
 
 The `streamType` is either `"camera"` or `"screencast"`.
 
@@ -327,6 +331,179 @@ dropdown.onchange = async () => {
 - `username` â€” display name
 - `avatar_pic` â€” profile image path
 - `status` â€” user's current status
+
+---
+
+## Representing Members in Your UI
+
+MiniChatCore provides member data before video streams arrive, allowing you to show participant lists immediately.
+
+### Key Concept: Members Exist Before Video
+
+When you select a channel, you get member data right away. Video streams arrive later (if at allâ€”some members may have cameras off).
+
+**Event sequence:**
+1. `onChannelSelected` â†’ channel data includes `members` array
+2. `onMemberJoined` â†’ new member arrives (video may come later)
+3. `onMemberStreamStart` â†’ video stream becomes available
+4. `onMemberStreamEnd` â†’ video stream stops (member still present)
+5. `onMemberLeft` â†’ member disconnects completely
+
+### Member Data Structure
+
+Each member object contains:
+
+```javascript
+{
+    id: "abc123",              // Unique member ID
+    local_name: "Alice",       // Display name in this channel
+    user: {                    // User account info
+        username: "alice_smith"
+    },
+    status: "nowinside",       // Raw status code
+    member_status: "nowinside" // Same as status (use either)
+}
+```
+
+**Status codes** indicate member state:
+- `"nowinside"` â†’ LIVE (actively participating with WebRTC)
+- `"lobby_pre"`, `"lobby_mid"` â†’ LOBBY (observing, not yet joined)
+- `"invited"`, `"creator"`, `"guest_out"`, etc. â†’ EXITED (not currently present)
+
+### Helper Method: getDisplayStatus()
+
+Convert raw status codes to simplified labels:
+
+```javascript
+chat.getDisplayStatus('nowinside');     // Returns 'ACTIVE' (LIVE)
+chat.getDisplayStatus('lobby_pre');     // Returns 'LOBBY'
+chat.getDisplayStatus('invited');       // Returns 'INACTIVE' (EXITED)
+```
+
+**Note:** 'ACTIVE' represents the LIVE state (WebRTC connected), while 'INACTIVE' represents EXITED members.
+
+### Getting Member Data
+
+**On channel selection:**
+```javascript
+chat.onChannelSelected = async (channel) => {
+    // Fetch fresh data (statuses change over time)
+    const freshChannel = await chat.getChannelById(channel.id);
+    
+    // freshChannel.members is an array including yourself
+    freshChannel.members.forEach(member => {
+        const isLocal = member.id === chat.currentMemberId;
+        const displayStatus = chat.getDisplayStatus(member.status);
+        // Build your UI however you like
+    });
+};
+```
+
+**When someone joins (new member arrives):**
+```javascript
+chat.onMemberJoined = (memberId) => {
+    // Note: Does not fire for yourself (you get onJoined instead)
+    const member = chat.getMember(memberId);
+    const status = chat.getDisplayStatus(member.member_status);
+    // Add member to your UI
+};
+```
+
+**When any member's status changes (including yourself):**
+```javascript
+chat.onMemberUpdate = (memberId) => {
+    // Fires for ALL members, including you
+    const member = chat.getMember(memberId);
+    const status = chat.getDisplayStatus(member.member_status);
+    
+    const isSelf = memberId === chat.currentMemberId;
+    // Update status badge for this member (or your own tile)
+};
+```
+
+**Why onMemberUpdate includes self:** When you go from LOBBY â†’ LIVE, your status badge needs updating too. This keeps all member tiles (including yours) synchronized automatically.
+
+**Get all members at any time:**
+```javascript
+// Returns array of all members (including self)
+const members = await chat.getCurrentChannelMembers();
+```
+
+**Get single member info:**
+```javascript
+const member = chat.getMember(memberId);
+// Returns: { username, local_name, user_username, member_status, hasCamera, hasScreencast }
+```
+
+**Get member media states (for mute indicators):**
+```javascript
+const states = chat.getMemberMediaStates(memberId);
+// Returns: { 
+//   cam_audio_detail: 'ON'|'MUTED'|'OFF', 
+//   cam_video_detail: 'ON'|'HIDDEN'|'OFF',
+//   screen_audio_detail: 'ON'|'MUTED'|'OFF',
+//   screen_video_detail: 'ON'|'HIDDEN'|'OFF'
+// }
+```
+
+### Video Stream Management
+
+When video arrives, attach it to your video element:
+
+```javascript
+chat.onMemberStreamStart = (memberId, streamType) => {
+    const videoElement = getYourVideoElement(memberId, streamType);
+    chat.setMemberVideoElement(memberId, streamType, videoElement);
+    // MiniChatCore automatically manages srcObject
+};
+```
+
+When video stops, the member is still in the room:
+
+```javascript
+chat.onMemberStreamEnd = (memberId, streamType) => {
+    // Update your UI to show member without video
+    // Don't remove the memberâ€”they're still present
+};
+```
+
+### Lobby vs Live vs Exit
+
+**LOBBY Mode** â€” Observing the channel:
+- Member exists, can see channel info and other members
+- No WebRTC connection (no media)
+- Status: `lobby_pre` or `lobby_mid`
+- Call `chat.join()` or `chat.goLive()` to enter LIVE mode
+
+**LIVE Mode** â€” Active participation:
+- WebRTC connected, sending/receiving media
+- Status: `nowinside`
+- Call `chat.returnToLobby()` to return to LOBBY (keeps membership)
+
+**Return to Lobby** (`chat.returnToLobby()`) â€” Step back temporarily:
+- Disconnects WebRTC but maintains channel membership
+- You can still see member updates
+- Quick rejoin with `chat.join()`
+- Formerly called `leave()` (still available as deprecated alias)
+
+**Exit** (`chat.exitChannel()`) â€” Full departure:
+- Complete teardown and cleanup
+- Stops all tracks, releases camera/mic
+- Channel is deselected
+- Use when user is done with the channel
+
+The **Lobby â†’ Live â†’ Lobby** cycle allows quick media toggling without losing context. **Exit** is final cleanup.
+
+### Implementation Reference
+
+See **`minichat-example.html`** for a working implementation showing:
+- Member tiles created on channel selection (lines ~200-235)
+- Placeholder tiles that toggle to show video when streams arrive
+- Status badges showing LOBBY/LIVE/EXITED states for members
+- LOBBY/LIVE indicators showing your current mode
+- Proper handling of lobby/live/exit flows with appropriate button labels
+
+The example uses a specific tile-based UI, but the same APIs support any design: grid layouts, list views, floating windows, etc.
 
 ---
 
