@@ -1283,27 +1283,13 @@
                 console.log('Member joined:', member?.username, member);
                 remoteMemberId = memberId;
 
-                // Show remote tile, hide waiting overlay
-                remoteTile.style.display = 'flex';
-                waitingOverlay.classList.add('hidden');
-
-                // Update remote name
+                // Pre-populate name and role (visible once waiting overlay hides)
                 updateRemoteName(member, memberId);
-
-                // Show remote role badge (opposite of local role)
                 updateRemoteRoleBadge();
 
-                // Show avatar fallback with off status (video/audio off by default when joining)
-                document.getElementById('remoteAvatar').classList.add('visible');
-                remoteVideo.style.display = 'none';
-
-                // Initialize remote media state (mic icon, etc.)
-                updateRemoteMediaState(memberId);
-
-                // Start timer when both participants are present
-                if (!timerInterval) {
-                    startTimer();
-                }
+                // Keep waiting overlay visible - update text to show someone is connecting
+                const name = member?.username || member?.name || 'Guest';
+                document.querySelector('#waitingOverlay .waiting-text').textContent = `${name} is connecting...`;
             };
 
             chat.onMemberLeft = (memberId) => {
@@ -1340,17 +1326,12 @@
                     // If we haven't detected this member yet, set them up
                     if (!remoteMemberId) {
                         remoteMemberId = memberId;
-                        remoteTile.style.display = 'flex';
-                        waitingOverlay.classList.add('hidden');
-
-                        // Show remote role badge
                         updateRemoteRoleBadge();
-
-                        // Start timer when both participants are present
-                        if (!timerInterval) {
-                            startTimer();
-                        }
                     }
+
+                    // Reveal the remote tile and hide waiting overlay
+                    remoteTile.style.display = 'flex';
+                    waitingOverlay.classList.add('hidden');
 
                     chat.setMemberVideoElement(memberId, streamType, remoteVideo);
                     document.getElementById('remoteAvatar').classList.remove('visible');
@@ -1362,6 +1343,11 @@
 
                     // Update media state indicators (mic icon, status text)
                     updateRemoteMediaState(memberId);
+
+                    // Start timer when video is confirmed
+                    if (!timerInterval) {
+                        startTimer();
+                    }
                 } else if (streamType === 'screencast') {
                     // Remote screen share started
                     const member = chat.getMember(memberId);
